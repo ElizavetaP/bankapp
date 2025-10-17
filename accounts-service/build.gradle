@@ -16,10 +16,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql'
     
-    // Flyway
-    implementation 'org.flywaydb:flyway-core'
-    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
-    
     // Consul (Service Discovery only)
     implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
     
