@@ -1,6 +1,3 @@
--- Bank App Database Initialization Script
--- All tables are created here (no Flyway migrations needed)
-
 -- ========================================
 -- 1. Create schemas for each microservice
 -- ========================================

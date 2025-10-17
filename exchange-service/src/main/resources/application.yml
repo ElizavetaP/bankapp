@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: exchange-service
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bankapp_db?currentSchema=exchange
+    username: bankapp
+    password: bankapp_password
+    driver-class-name: org.postgresql.Driver
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: exchange
+  
+  # Consul Configuration (Service Discovery only)
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${random.value}
+        service-name: ${spring.application.name}
+
+# Server Configuration
+server:
+  port: 8085
+
+# Management Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.bankapp.exchange: DEBUG
+    org.springframework.cloud.consul: DEBUG
+    org.hibernate.SQL: DEBUG
+
+
