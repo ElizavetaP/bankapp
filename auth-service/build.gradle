@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+}
+
+description = 'Auth Service - OAuth 2.0 Authorization Server'
+
+dependencies {
+    // Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // Security & OAuth2
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
+    
+    // Data
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+    
+    // Flyway
+    implementation 'org.flywaydb:flyway-core'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+    
+    // Consul (Service Discovery only)
+    implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
+    
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    
+    // Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+}
+
+bootJar {
+    archiveBaseName = 'auth-service'
+    archiveVersion = project.version
+}
+
+

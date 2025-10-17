@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+}
+
+description = 'Accounts Service - User accounts and balances management'
+
+dependencies {
+    // Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    
+    // Data
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+    
+    // Flyway
+    implementation 'org.flywaydb:flyway-core'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+    
+    // Consul (Service Discovery only)
+    implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
+    
+    // OpenFeign (для межсервисного взаимодействия)
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    
+    // Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+}
+
+bootJar {
+    archiveBaseName = 'accounts-service'
+    archiveVersion = project.version
+}
+
+
