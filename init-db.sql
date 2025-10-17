@@ -1,0 +1,59 @@
+-- Bank App Database Initialization Script
+
+-- Create schemas for each microservice
+CREATE SCHEMA IF NOT EXISTS accounts;
+CREATE SCHEMA IF NOT EXISTS cash;
+CREATE SCHEMA IF NOT EXISTS transfer;
+CREATE SCHEMA IF NOT EXISTS exchange;
+CREATE SCHEMA IF NOT EXISTS blocker;
+CREATE SCHEMA IF NOT EXISTS notifications;
+CREATE SCHEMA IF NOT EXISTS auth;
+
+-- Grant privileges to bankapp user
+GRANT ALL PRIVILEGES ON SCHEMA accounts TO bankapp;
+GRANT ALL PRIVILEGES ON SCHEMA cash TO bankapp;
+GRANT ALL PRIVILEGES ON SCHEMA transfer TO bankapp;
+GRANT ALL PRIVILEGES ON SCHEMA exchange TO bankapp;
+GRANT ALL PRIVILEGES ON SCHEMA blocker TO bankapp;
+GRANT ALL PRIVILEGES ON SCHEMA notifications TO bankapp;
+GRANT ALL PRIVILEGES ON SCHEMA auth TO bankapp;
+
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA accounts GRANT ALL ON TABLES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA cash GRANT ALL ON TABLES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA transfer GRANT ALL ON TABLES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA exchange GRANT ALL ON TABLES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA blocker GRANT ALL ON TABLES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA notifications GRANT ALL ON TABLES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA auth GRANT ALL ON TABLES TO bankapp;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA accounts GRANT ALL ON SEQUENCES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA cash GRANT ALL ON SEQUENCES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA transfer GRANT ALL ON SEQUENCES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA exchange GRANT ALL ON SEQUENCES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA blocker GRANT ALL ON SEQUENCES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA notifications GRANT ALL ON SEQUENCES TO bankapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA auth GRANT ALL ON SEQUENCES TO bankapp;
+
+-- Initialize Exchange rates (in exchange schema)
+SET search_path TO exchange;
+
+CREATE TABLE IF NOT EXISTS exchange_rates (
+    id BIGSERIAL PRIMARY KEY,
+    currency_code VARCHAR(3) UNIQUE NOT NULL,
+    buy_rate DECIMAL(19, 8) NOT NULL,
+    sell_rate DECIMAL(19, 8) NOT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT check_positive_rates CHECK (buy_rate > 0 AND sell_rate > 0),
+    CONSTRAINT check_rub_rate CHECK (
+        currency_code != 'RUB' OR (buy_rate = 1 AND sell_rate = 1)
+    )
+);
+
+INSERT INTO exchange_rates (currency_code, buy_rate, sell_rate) VALUES
+('RUB', 1.00, 1.00),
+('USD', 82.50, 78.00),
+('EUR', 96.40, 90.70)
+ON CONFLICT (currency_code) DO NOTHING;
+
+SET search_path TO public;
