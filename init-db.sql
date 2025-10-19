@@ -99,14 +99,21 @@ CREATE TABLE IF NOT EXISTS cash_operations (
     currency VARCHAR(3) NOT NULL,
     amount DECIMAL(19, 2) NOT NULL,
     operation_type VARCHAR(10) NOT NULL,
+    saga_id VARCHAR(36) NOT NULL UNIQUE,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    error_message TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT check_positive_amount CHECK (amount > 0),
-    CONSTRAINT check_operation_type CHECK (operation_type IN ('DEPOSIT', 'WITHDRAW'))
+    CONSTRAINT check_operation_type CHECK (operation_type IN ('DEPOSIT', 'WITHDRAW')),
+    CONSTRAINT check_saga_status CHECK (status IN ('PENDING', 'COMPLETED', 'FAILED', 'COMPENSATED'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_cash_operations_user_login ON cash_operations(user_login);
 CREATE INDEX IF NOT EXISTS idx_cash_operations_created_at ON cash_operations(created_at);
 CREATE INDEX IF NOT EXISTS idx_cash_operations_operation_type ON cash_operations(operation_type);
+CREATE INDEX IF NOT EXISTS idx_cash_operations_saga_id ON cash_operations(saga_id);
+CREATE INDEX IF NOT EXISTS idx_cash_operations_status ON cash_operations(status);
 
 -- ========================================
 -- 6. TRANSFER SCHEMA - Transfers table
@@ -198,6 +205,22 @@ CREATE TABLE IF NOT EXISTS blocked_operations (
 CREATE INDEX IF NOT EXISTS idx_blocked_operations_user_login ON blocked_operations(user_login);
 CREATE INDEX IF NOT EXISTS idx_blocked_operations_is_active ON blocked_operations(is_active);
 CREATE INDEX IF NOT EXISTS idx_blocked_operations_blocked_at ON blocked_operations(blocked_at);
+
+-- ========================================
+-- 10. OUTBOX SCHEMA - Transactional Outbox Pattern для уведомлений
+-- ========================================
+CREATE SCHEMA IF NOT EXISTS outbox;
+SET search_path TO outbox;
+
+CREATE TABLE IF NOT EXISTS outbox_events (
+    id BIGSERIAL PRIMARY KEY,
+    event_type VARCHAR(50) NOT NULL,        -- 'CASH_DEPOSIT', 'CASH_WITHDRAW', 'TRANSFER', etc.
+    payload TEXT NOT NULL,                  -- JSON строка с данными события
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Индекс для сортировки по времени (FIFO)
+CREATE INDEX IF NOT EXISTS idx_outbox_created_at ON outbox_events(created_at);
 
 -- ========================================
 -- Reset search path
