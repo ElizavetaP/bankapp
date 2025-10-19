@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-description = 'Accounts Service - User accounts and balances management'
+description = 'Cash Service - Cash deposit and withdrawal operations'
 
 dependencies {
     // Web
@@ -19,7 +19,7 @@ dependencies {
     // Consul (Service Discovery only)
     implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
     
-    // OpenFeign (для межсервисного взаимодействия)
+    // OpenFeign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     
     // NATS - Message Broker for Event-Driven Saga
@@ -33,7 +33,7 @@ dependencies {
 }
 
 bootJar {
-    archiveBaseName = 'accounts-service'
+    archiveBaseName = 'cash-service'
     archiveVersion = project.version
 }
 
