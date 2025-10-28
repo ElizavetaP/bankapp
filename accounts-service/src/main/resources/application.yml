@@ -47,6 +47,20 @@ management:
     health:
       show-details: always
 
+# NATS Configuration
+nats:
+  url: nats://localhost:4222
+
+# Outbox Configuration
+application:
+  outbox:
+    limit: 10
+  saga:
+    topics:
+      balance-update-requested: saga.balance.update.requested
+      balance-updated: saga.balance.updated
+      balance-update-failed: saga.balance.update.failed
+
 # Logging
 logging:
   level:

@@ -58,6 +58,8 @@ application:
   saga:
     topics:
       balance-update-requested: saga.balance.update.requested
+      balance-updated: saga.balance.updated
+      balance-update-failed: saga.balance.update.failed
 
 # Logging
 logging:

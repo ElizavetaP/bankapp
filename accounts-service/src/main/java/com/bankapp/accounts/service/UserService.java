@@ -2,6 +2,7 @@ package com.bankapp.accounts.service;
 
 import com.bankapp.accounts.dto.UserDto;
 import com.bankapp.accounts.entity.User;
+import com.bankapp.accounts.exception.UserNotFoundException;
 import com.bankapp.accounts.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,7 +70,7 @@ public class UserService {
 
     public User findUserByLogin(String login) {
         return userRepository.findByLogin(login)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + login));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + login));
     }
 
     private UserDto toDto(User user) {

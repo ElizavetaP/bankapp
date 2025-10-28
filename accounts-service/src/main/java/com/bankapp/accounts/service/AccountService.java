@@ -3,6 +3,8 @@ package com.bankapp.accounts.service;
 import com.bankapp.accounts.dto.AccountDto;
 import com.bankapp.accounts.entity.Account;
 import com.bankapp.accounts.entity.User;
+import com.bankapp.accounts.exception.AccountNotFoundException;
+import com.bankapp.accounts.exception.InsufficientFundsException;
 import com.bankapp.accounts.model.Currency;
 import com.bankapp.accounts.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +78,7 @@ public class AccountService {
     public BigDecimal getAccountBalance(String login, Currency currency) {
         User user = userService.findUserByLogin(login);
         Account account = accountRepository.findByUserAndCurrency(user, currency.name())
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found for currency: " + currency));
         return account.getBalance();
     }
 
@@ -98,6 +100,30 @@ public class AccountService {
         account.setBalance(newBalance);
         accountRepository.save(account);
         log.info("Balance updated successfully. New balance: {}", newBalance);
+    }
+
+    /**
+     * Обновить баланс и вернуть новое значение (для Saga).
+     */
+    @Transactional
+    public BigDecimal updateBalanceAndReturn(String login, String currencyCode, BigDecimal amount) {
+        log.info("Updating balance for user: {}, currency: {}, amount: {}", login, currencyCode, amount);
+
+        User user = userService.findUserByLogin(login);
+        Account account = accountRepository.findByUserAndCurrency(user, currencyCode)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found for currency: " + currencyCode));
+
+        BigDecimal newBalance = account.getBalance().add(amount);
+        
+        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new InsufficientFundsException("Insufficient funds. Required: " + amount.abs() + ", available: " + account.getBalance());
+        }
+
+        account.setBalance(newBalance);
+        accountRepository.save(account);
+        log.info("Balance updated successfully. New balance: {}", newBalance);
+        
+        return newBalance;
     }
 }
 
