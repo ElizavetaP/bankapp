@@ -82,15 +82,23 @@ public class OutboxProcessor {
                     // Событие НЕ добавляется в processedIds - останется в Outbox для retry
                 }
             }
+            
         } catch (IOException e) {
             // NATS полностью недоступен - не можем создать connection
             log.error("NATS connection failed: {}", e.getMessage());
         }
-
-        // Удаляем успешно обработанные события
+        
+        // Удаляем успешно обработанные события (после закрытия NATS connection)
         if (!processedIds.isEmpty()) {
-            outboxEventRepository.deleteAllById(processedIds);
-            log.info("Deleted {} processed outbox events", processedIds.size());
+            try {
+                outboxEventRepository.deleteAllById(processedIds);
+                log.info("Deleted {} processed outbox events", processedIds.size());
+            } catch (Exception e) {
+                // События отправлены, но не удалены - будут переотправлены
+               log.error("Failed to delete processed events from Outbox (database error). " +
+                         "Events will be redelivered. " +
+                         "Processed IDs: {}", processedIds, e);
+            }
         } else {
             log.warn("No events were processed successfully");
         }
