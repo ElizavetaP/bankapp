@@ -197,14 +197,12 @@ CREATE TABLE IF NOT EXISTS blocked_operations (
     operation_type VARCHAR(20) NOT NULL,
     reason TEXT NOT NULL,
     blocked_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    unblocked_at TIMESTAMP,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT check_operation_type CHECK (operation_type IN ('TRANSFER', 'CASH_WITHDRAW', 'CASH_DEPOSIT', 'ACCOUNT'))
 );
 
-CREATE INDEX IF NOT EXISTS idx_blocked_operations_user_login ON blocked_operations(user_login);
-CREATE INDEX IF NOT EXISTS idx_blocked_operations_is_active ON blocked_operations(is_active);
-CREATE INDEX IF NOT EXISTS idx_blocked_operations_blocked_at ON blocked_operations(blocked_at);
+-- Индекс для быстрой проверки блокировки
+CREATE UNIQUE INDEX IF NOT EXISTS idx_blocked_operations_unique 
+ON blocked_operations(user_login, operation_type);
 
 -- ========================================
 -- 10. OUTBOX SCHEMA - Transactional Outbox Pattern для уведомлений
