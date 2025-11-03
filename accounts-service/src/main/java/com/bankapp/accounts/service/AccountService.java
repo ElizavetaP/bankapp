@@ -14,10 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -124,6 +122,28 @@ public class AccountService {
         log.info("Balance updated successfully. New balance: {}", newBalance);
         
         return newBalance;
+    }
+
+    /**
+     * Удалить счёт (можно удалить только с нулевым балансом).
+     */
+    @Transactional
+    public void deleteAccount(String login, Currency currency) {
+        log.info("Deleting account for user: {}, currency: {}", login, currency);
+
+        User user = userService.findUserByLogin(login);
+        String currencyCode = currency.name();
+        
+        Account account = accountRepository.findByUserAndCurrency(user, currencyCode)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found for currency: " + currency));
+
+        // Проверка баланса
+        if (account.getBalance().compareTo(BigDecimal.ZERO) != 0) {
+            throw new IllegalArgumentException("Cannot delete account with non-zero balance");
+        }
+
+        accountRepository.delete(account);
+        log.info("Account deleted successfully");
     }
 }
 

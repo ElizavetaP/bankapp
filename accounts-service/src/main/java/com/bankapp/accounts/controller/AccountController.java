@@ -70,5 +70,18 @@ public class AccountController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @DeleteMapping("/{login}/{currency}")
+    public ResponseEntity<Void> deleteAccount(
+            @PathVariable String login,
+            @PathVariable Currency currency) {
+        try {
+            accountService.deleteAccount(login, currency);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            log.error("Failed to delete account: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
 

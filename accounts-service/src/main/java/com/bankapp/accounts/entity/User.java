@@ -24,17 +24,29 @@ public class User {
     @Column(nullable = false, unique = true, length = 50)
     private String login;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @Column(nullable = false, length = 255)
+    private String password;
 
-    @Column(nullable = false)
-    private LocalDate birthdate;
+    @Column(name = "first_name", nullable = false, length = 100)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false, length = 100)
+    private String lastName;
+
+    @Column(nullable = false, length = 255)
+    private String email;
+
+    @Column(name = "birth_date", nullable = false)
+    private LocalDate birthDate;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private Boolean enabled = true;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Account> accounts = new ArrayList<>();
@@ -43,6 +55,9 @@ public class User {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (enabled == null) {
+            enabled = true;
+        }
     }
 
     @PreUpdate
