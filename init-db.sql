@@ -133,6 +133,18 @@ CREATE INDEX IF NOT EXISTS idx_cash_operations_operation_type ON cash_operations
 CREATE INDEX IF NOT EXISTS idx_cash_operations_saga_id ON cash_operations(saga_id);
 CREATE INDEX IF NOT EXISTS idx_cash_operations_status ON cash_operations(status);
 
+CREATE TABLE IF NOT EXISTS outbox_events (
+    id BIGSERIAL PRIMARY KEY,
+    event_type VARCHAR(100) NOT NULL,
+    payload TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    processed_at TIMESTAMP NULL,
+    processed BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE INDEX IF NOT EXISTS idx_cash_outbox_processed ON outbox_events(processed);
+CREATE INDEX IF NOT EXISTS idx_cash_outbox_created_at ON outbox_events(created_at);
+
 -- ========================================
 -- 6. TRANSFER SCHEMA - Transfers table
 -- ========================================

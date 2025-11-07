@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+}
+
+description = 'Exchange Generator Service - Currency exchange rates generator'
+
+dependencies {
+    // Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    
+    // Consul (Service Discovery only)
+    implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
+    
+    // OpenFeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    
+    // Scheduler
+    implementation 'org.springframework.boot:spring-boot-starter'
+    
+    // Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+}
+
+bootJar {
+    archiveBaseName = 'exchange-generator-service'
+    archiveVersion = project.version
+}
+
+
