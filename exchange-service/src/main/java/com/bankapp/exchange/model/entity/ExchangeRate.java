@@ -23,10 +23,10 @@ public class ExchangeRate {
     @Column(name = "currency_code", nullable = false, unique = true, length = 3)
     private String currencyCode;
     
-    @Column(name = "buy_rate", nullable = false, precision = 19, scale = 8)
+    @Column(name = "buy_rate", nullable = false, precision = 19, scale = 4)
     private BigDecimal buyRate;
     
-    @Column(name = "sell_rate", nullable = false, precision = 19, scale = 8)
+    @Column(name = "sell_rate", nullable = false, precision = 19, scale = 4)
     private BigDecimal sellRate;
     
     @Column(name = "updated_at", nullable = false)

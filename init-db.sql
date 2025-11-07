@@ -65,11 +65,15 @@ SET search_path TO accounts;
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     login VARCHAR(50) UNIQUE NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    birthdate DATE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    birth_date DATE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT check_login_length CHECK (LENGTH(login) >= 3)
+    updated_at TIMESTAMP DEFAULT NOW(),
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    CONSTRAINT check_age_18 CHECK (EXTRACT(YEAR FROM AGE(CURRENT_DATE, birth_date)) >= 18)
 );
 
 CREATE TABLE IF NOT EXISTS accounts (
@@ -78,15 +82,29 @@ CREATE TABLE IF NOT EXISTS accounts (
     currency VARCHAR(3) NOT NULL,
     balance DECIMAL(19, 2) NOT NULL DEFAULT 0.00,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
     CONSTRAINT fk_accounts_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT check_positive_balance CHECK (balance >= 0),
-    CONSTRAINT unique_user_currency UNIQUE (user_id, currency)
+    CONSTRAINT uq_user_currency UNIQUE (user_id, currency),
+    CONSTRAINT check_positive_balance CHECK (balance >= 0)
 );
 
-CREATE INDEX IF NOT EXISTS idx_accounts_users_login ON users(login);
+CREATE TABLE IF NOT EXISTS outbox_events (
+    id BIGSERIAL PRIMARY KEY,
+    aggregate_type VARCHAR(50) NOT NULL,
+    aggregate_id VARCHAR(100) NOT NULL,
+    event_type VARCHAR(100) NOT NULL,
+    payload TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    processed_at TIMESTAMP NULL,
+    processed BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_login ON users(login);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
 CREATE INDEX IF NOT EXISTS idx_accounts_currency ON accounts(currency);
+CREATE INDEX IF NOT EXISTS idx_outbox_processed ON outbox_events(processed);
+CREATE INDEX IF NOT EXISTS idx_outbox_created_at ON outbox_events(created_at);
 
 -- ========================================
 -- 5. CASH SCHEMA - Cash operations table
@@ -149,8 +167,8 @@ SET search_path TO exchange;
 CREATE TABLE IF NOT EXISTS exchange_rates (
     id BIGSERIAL PRIMARY KEY,
     currency_code VARCHAR(3) UNIQUE NOT NULL,
-    buy_rate DECIMAL(19, 8) NOT NULL,
-    sell_rate DECIMAL(19, 8) NOT NULL,
+    buy_rate DECIMAL(19, 4) NOT NULL,
+    sell_rate DECIMAL(19, 4) NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT check_positive_rates CHECK (buy_rate > 0 AND sell_rate > 0),
     CONSTRAINT check_rub_rate CHECK (
